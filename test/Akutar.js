@@ -66,6 +66,6 @@ describe("Tests", function () {
 
     console.log(`${totalMinted} have been minted.`);
 
-    expect(totalMinted).to.equal(1500);
+    expect(totalMinted).to.equal(15000);
   });
 });
