@@ -94,7 +94,7 @@ contract Akutar is Ownable, ERC721 {
         for (uint256 i = 0; i < addresses.length; i++) {
 
             //If we are over the endingIndex because of the shuffle, adjust to current position minus max quantity;
-            if (currentId > thisGrouping.endingIndex)
+            if (currentId >= thisGrouping.endingIndex)
                 currentId = currentId - maxQuantityWithinThisGrouping;
 
             console.log(currentId);
