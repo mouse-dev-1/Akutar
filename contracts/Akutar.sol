@@ -25,7 +25,7 @@ Written by: mousedev.eth
 
 contract Akutar is Ownable, ERC721 {
     //Contract URI
-    string public CONTRACT_URI = "";
+    string public CONTRACT_URI;
 
     //Base URI
     string public BASE_URI;
@@ -97,8 +97,6 @@ contract Akutar is Ownable, ERC721 {
             if (currentId >= thisGrouping.endingIndex)
                 currentId = currentId - maxQuantityWithinThisGrouping;
 
-            console.log(currentId);
-
             //Mint thisId
             _safeMint(addresses[i], currentId);
 
@@ -135,12 +133,12 @@ contract Akutar is Ownable, ERC721 {
         BASE_URI = _baseURI;
     }
 
-    function contractURI() public view returns (string memory) {
-        return CONTRACT_URI;
-    }
-
     function setContractURI(string memory _contractURI) public onlyOwner {
         CONTRACT_URI = _contractURI;
+    }
+
+    function contractURI() public view returns (string memory) {
+        return CONTRACT_URI;
     }
 
     function tokenURI(uint256 _tokenId)
@@ -153,7 +151,8 @@ contract Akutar is Ownable, ERC721 {
             string(
                 abi.encodePacked(
                     BASE_URI,
-                    Strings.toString(_tokenId)
+                    Strings.toString(_tokenId),
+                    ".json"
                 )
             );
     }

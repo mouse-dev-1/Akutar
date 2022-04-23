@@ -22,7 +22,7 @@ describe("Tests", function () {
 
     await Akutar.reveal();
 
-    console.log(await Akutar.shiftQuantity());
+    console.log(`Shift quantity has been set to: ${parseInt(await Akutar.shiftQuantity())}`);
     expect(await Akutar.shiftQuantity()).to.gte(0);
   });
 
