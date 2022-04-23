@@ -81,8 +81,7 @@ contract Akutar is Ownable, ERC721 {
             maxQuantityWithinThisGrouping;
 
         //Index to currently start on
-        uint256 startingIndexWithinThisGrouping = thisGrouping.startingIndex +
-            shiftQuantityWithinThisGrouping;
+        uint256 startingIndexWithinThisGrouping = thisGrouping.startingIndex + thisGrouping.minted + shiftQuantityWithinThisGrouping;
 
         require(
             thisGrouping.minted + addresses.length <=
@@ -108,7 +107,7 @@ contract Akutar is Ownable, ERC721 {
             currentId++;
         }
 
-        thisGrouping.minted += addresses.length;
+        airdropGroupings[airdropGrouping].minted += addresses.length;
     }
 
     function commit() public onlyOwner {

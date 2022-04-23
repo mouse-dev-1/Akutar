@@ -27,7 +27,12 @@ describe("Tests", function () {
   });
 
   it("Should airdop akutars", async function () {
-    await Akutar.airdrop(1, signers.map(a => a.address));
+    for (var i = 0; i < 27; i++) {
+      await Akutar.airdrop(
+        3,
+        signers.map((a) => a.address)
+      );
+    }
 
     console.log(await Akutar.balanceOf(signers[0].address));
     console.log(await Akutar.balanceOf(signers[1].address));
