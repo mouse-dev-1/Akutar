@@ -13,13 +13,13 @@ Written by: mousedev.eth
 
 15,000 NFTs in 4 sections
 
-ID 1-6 partner reserved NFTs
+(6) ID 1-6 partner reserved NFTs
 
-ID 7-535 Mega OG Akutars, randomly assigned to 529 Mega OG Mint Pass holders (addresses known)
+(529) ID 7-535 Mega OG Akutars, randomly assigned to 529 Mega OG Mint Pass holders (addresses known)
 
-ID 536-3,062 OG Akutars, randomly assigned to 2,527 OG Mint Pass holders (addresses known)
+(2527) ID 536-3,062 OG Akutars, randomly assigned to 2,527 OG Mint Pass holders (addresses known)
 
-ID 3,063-15,000 Akutars, randomly assigned to 6,443 Mint Pass holders + 5495 public bids (addresses known)
+(11938) ID 3,063-15,000 Akutars, randomly assigned to 6,443 Mint Pass holders + 5495 public bids (addresses known)
 
 */
 
@@ -71,16 +71,16 @@ contract Akutar is Ownable, ERC721 {
 
         Grouping memory thisGrouping = airdropGroupings[airdropGrouping];
 
-        //Total tokens in this grouping;
+        //Total tokens in this grouping.
         uint256 maxQuantityWithinThisGrouping = (thisGrouping.endingIndex -
             thisGrouping.startingIndex +
             1);
 
-        //How much to shift within these constraints.;
+        //How much to shift within these constraints.
         uint256 shiftQuantityWithinThisGrouping = shiftQuantity %
             maxQuantityWithinThisGrouping;
 
-        //Index to currently start on
+        //Index to currently start on.
         uint256 startingIndexWithinThisGrouping = thisGrouping.startingIndex + thisGrouping.minted + shiftQuantityWithinThisGrouping;
 
         require(
