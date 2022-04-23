@@ -46,8 +46,12 @@ describe("Tests", function () {
       );
     }
 
-    console.log(await Akutar.balanceOf(signers[0].address));
-    console.log(await Akutar.balanceOf(signers[1].address));
-    console.log(await Akutar.balanceOf(signers[2].address));
+    const totalMinted =
+      parseInt((await Akutar.airdropGroupings(0)).minted) +
+      parseInt((await Akutar.airdropGroupings(1)).minted) +
+      parseInt((await Akutar.airdropGroupings(2)).minted) +
+      parseInt((await Akutar.airdropGroupings(3)).minted);
+
+    expect(totalMinted).to.equal(14000);
   });
 });
