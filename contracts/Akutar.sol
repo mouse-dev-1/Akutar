@@ -41,10 +41,10 @@ contract Akutar is Ownable, ERC721 {
 
     //Struct to define a grouping of airdrops
     struct Grouping {
-        uint64 startingIndex;
-        uint64 endingIndex;
-        uint64 minted;
-        uint64 groupShiftQuantity;
+        uint256 startingIndex;
+        uint256 endingIndex;
+        uint256 minted;
+        uint256 groupShiftQuantity;
     }
 
     //Mapping of groupingId to grouping struct.
@@ -123,7 +123,7 @@ contract Akutar is Ownable, ERC721 {
         require(committed, "You have yet to commit");
 
         //set shift quantity
-        uint256 shiftQuantity = uint256(blockhash(blockToUse));
+        shiftQuantity = uint256(blockhash(blockToUse));
         
         //How much to shift within these constraints.
         airdropGroupings[0].groupShiftQuantity = 0; //do not shift partner NFTs
