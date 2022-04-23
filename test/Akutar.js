@@ -64,8 +64,8 @@ describe("Tests", function () {
       parseInt((await Akutar.airdropGroupings(2)).minted) +
       parseInt((await Akutar.airdropGroupings(3)).minted);
 
-    console.log(totalMinted);
+    console.log(`${totalMinted} have been minted.`);
 
-    //expect(totalMinted).to.equal(14005);
+    expect(totalMinted).to.equal(1500);
   });
 });
