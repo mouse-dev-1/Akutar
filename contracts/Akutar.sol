@@ -100,7 +100,7 @@ contract Akutar is Ownable, ERC721 {
             console.log(currentId);
 
             //Mint thisId
-            //_safeMint(addresses[i], currentId);
+            _safeMint(addresses[i], currentId);
 
             //Increment ID by one.
             currentId++;
