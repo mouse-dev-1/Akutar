@@ -41,9 +41,10 @@ contract Akutar is Ownable, ERC721 {
 
     //Struct to define a grouping of airdrops
     struct Grouping {
-        uint256 startingIndex;
-        uint256 endingIndex;
-        uint256 minted;
+        uint64 startingIndex;
+        uint64 endingIndex;
+        uint64 minted;
+        uint64 groupShiftQuantity;
     }
 
     //Mapping of groupingId to grouping struct.
@@ -51,16 +52,16 @@ contract Akutar is Ownable, ERC721 {
 
     constructor() ERC721("Akutars", "AKU") {
         //Partner
-        airdropGroupings[0] = Grouping(1, 7, 0);
+        airdropGroupings[0] = Grouping(1, 7, 0, 0);
 
         //Mega OG
-        airdropGroupings[1] = Grouping(7, 536, 0);
+        airdropGroupings[1] = Grouping(7, 536, 0, 0);
 
         //OG
-        airdropGroupings[2] = Grouping(536, 3063, 0);
+        airdropGroupings[2] = Grouping(536, 3063, 0, 0);
 
         //Normal
-        airdropGroupings[3] = Grouping(3063, 15001, 0);
+        airdropGroupings[3] = Grouping(3063, 15001, 0, 0);
     }
 
     function airdrop(uint256 airdropGrouping, address[] memory addresses)
@@ -75,12 +76,8 @@ contract Akutar is Ownable, ERC721 {
         uint256 maxQuantityWithinThisGrouping = (thisGrouping.endingIndex -
             thisGrouping.startingIndex);
 
-        //How much to shift within these constraints.
-        uint256 shiftQuantityWithinThisGrouping = shiftQuantity %
-            maxQuantityWithinThisGrouping;
-
         //Index to currently start on.
-        uint256 startingIndexWithinThisGrouping = thisGrouping.startingIndex + thisGrouping.minted + shiftQuantityWithinThisGrouping;
+        uint256 startingIndexWithinThisGrouping = thisGrouping.startingIndex + thisGrouping.minted + thisGrouping.groupShiftQuantity;
 
         require(
             thisGrouping.minted + addresses.length <=
@@ -93,12 +90,10 @@ contract Akutar is Ownable, ERC721 {
 
         for (uint256 i = 0; i < addresses.length; i++) {
 
-            //If we are over the endingIndex because of the shuffle, adjust to current position minus max quantity;
+            //If we are at or over the endingIndex because of the shuffle, wrap to the start of the group;
             if (currentId >= thisGrouping.endingIndex)
                 currentId = currentId - maxQuantityWithinThisGrouping;
-
-            console.log(currentId);
-
+                
             //Mint thisId
             _safeMint(addresses[i], currentId);
 
@@ -128,7 +123,13 @@ contract Akutar is Ownable, ERC721 {
         require(committed, "You have yet to commit");
 
         //set shift quantity
-        shiftQuantity = uint256(blockhash(blockToUse)) % 15000;
+        uint256 shiftQuantity = uint256(blockhash(blockToUse));
+        
+        //How much to shift within these constraints.
+        airdropGroupings[0].groupShiftQuantity = 0; //do not shift partner NFTs
+        airdropGroupings[1].groupShiftQuantity = shiftQuantity % (airdropGroupings[1].endingIndex - airdropGroupings[1].startingIndex);
+        airdropGroupings[2].groupShiftQuantity = shiftQuantity % (airdropGroupings[2].endingIndex - airdropGroupings[2].startingIndex);
+        airdropGroupings[3].groupShiftQuantity = shiftQuantity % (airdropGroupings[3].endingIndex - airdropGroupings[3].startingIndex);
     }
 
     function setBaseURI(string memory _baseURI) public onlyOwner {
@@ -153,7 +154,8 @@ contract Akutar is Ownable, ERC721 {
             string(
                 abi.encodePacked(
                     BASE_URI,
-                    Strings.toString(_tokenId)
+                    Strings.toString(_tokenId),
+                    ".json"
                 )
             );
     }
