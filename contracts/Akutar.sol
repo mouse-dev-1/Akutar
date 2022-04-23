@@ -51,13 +51,13 @@ contract Akutar is Ownable, ERC721 {
 
     constructor() ERC721("Akutars", "AKU") {
         //Partner
-        airdropGroupings[0] = Grouping(1, 6, 0);
+        airdropGroupings[0] = Grouping(1, 7, 0);
 
         //Mega OG
-        airdropGroupings[1] = Grouping(7, 535, 0);
+        airdropGroupings[1] = Grouping(7, 536, 0);
 
         //OG
-        airdropGroupings[2] = Grouping(536, 3062, 0);
+        airdropGroupings[2] = Grouping(536, 3063, 0);
 
         //Normal
         airdropGroupings[3] = Grouping(3063, 15000, 0);
