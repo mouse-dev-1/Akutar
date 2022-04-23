@@ -60,7 +60,7 @@ contract Akutar is Ownable, ERC721 {
         airdropGroupings[2] = Grouping(536, 3063, 0);
 
         //Normal
-        airdropGroupings[3] = Grouping(3063, 15000, 0);
+        airdropGroupings[3] = Grouping(3063, 15001, 0);
     }
 
     function airdrop(uint256 airdropGrouping, address[] memory addresses)
@@ -73,8 +73,7 @@ contract Akutar is Ownable, ERC721 {
 
         //Total tokens in this grouping.
         uint256 maxQuantityWithinThisGrouping = (thisGrouping.endingIndex -
-            thisGrouping.startingIndex +
-            1);
+            thisGrouping.startingIndex);
 
         //How much to shift within these constraints.
         uint256 shiftQuantityWithinThisGrouping = shiftQuantity %
