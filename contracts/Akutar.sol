@@ -128,7 +128,7 @@ contract Akutar is Ownable, ERC721 {
         require(block.number >= blockToUse, "Not enough time has passed to reveal.");
 
         //set shift quantity
-        shiftQuantity = (uint256(blockhash(blockToUse)) % 14900) + 1;
+        shiftQuantity = (uint256(blockhash(blockToUse)) % 14999) + 1;
     }
 
     function setBaseURI(string memory _baseURI) public onlyOwner {
