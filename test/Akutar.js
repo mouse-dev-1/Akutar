@@ -2,30 +2,30 @@ const { expect } = require("chai");
 const { BigNumber } = require("ethers");
 const { ethers, waffle } = require("hardhat");
 
-before(async function () {
+beforeEach(async function () {
   _Akutar = await ethers.getContractFactory("Akutar");
   Akutar = await _Akutar.deploy();
 
   signers = await ethers.getSigners();
+
+
+  await Akutar.commit();
+
+  //Commits and reveal shuffle index
+  //Mine 5 fake blocks
+  await network.provider.send("evm_mine");
+  await network.provider.send("evm_mine");
+  await network.provider.send("evm_mine");
+  await network.provider.send("evm_mine");
+  await network.provider.send("evm_mine");
+
+  await Akutar.reveal();
+
+  console.log(`Shift quantity has been set to: ${parseInt(await Akutar.shiftQuantity())}`);
+  expect(await Akutar.shiftQuantity()).to.gte(0);
 });
 
 describe("Tests", function () {
-  it("Commits and reveal shuffle index", async function () {
-    await Akutar.commit();
-
-    //Mine 5 fake blocks
-    await network.provider.send("evm_mine");
-    await network.provider.send("evm_mine");
-    await network.provider.send("evm_mine");
-    await network.provider.send("evm_mine");
-    await network.provider.send("evm_mine");
-
-    await Akutar.reveal();
-
-    console.log(`Shift quantity has been set to: ${parseInt(await Akutar.shiftQuantity())}`);
-    expect(await Akutar.shiftQuantity()).to.gte(0);
-  });
-
   it("Should airdop akutars", async function () {
     //DROP 0
     await Akutar.airdrop(0, signers.map((a) => a.address).slice(0, 6));
@@ -70,5 +70,12 @@ describe("Tests", function () {
 
     expect(totalSupply).to.equal(15000);
     expect(totalMinted).to.equal(15000);
+  });
+
+  it("Should handle airdrops to contracts correctly", async function () {
+    //Deploy a stub contract
+    const holderAsContract = await _Akutar.deploy();
+    //Mint to contract without ERC721 receiver should succeed
+    await Akutar.airdrop(0, [holderAsContract.address]);
   });
 });
