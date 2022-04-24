@@ -125,7 +125,7 @@ contract Akutar is Ownable, ERC721 {
         require(committed, "You have yet to commit");
 
         //set shift quantity
-        shiftQuantity = uint256(blockhash(blockToUse)) % 15000;
+        shiftQuantity = (uint256(blockhash(blockToUse)) % 14900) + 1;
     }
 
     function setBaseURI(string memory _baseURI) public onlyOwner {
