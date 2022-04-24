@@ -23,7 +23,7 @@ describe("Tests", function () {
     await Akutar.reveal();
 
     console.log(`Shift quantity has been set to: ${parseInt(await Akutar.shiftQuantity())}`);
-    expect(await Akutar.shiftQuantity()).to.gte(0);
+    expect(await Akutar.shiftQuantity()).to.gt(0);
   });
 
   it("Should airdop akutars", async function () {
