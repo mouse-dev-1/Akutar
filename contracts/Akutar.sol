@@ -38,6 +38,8 @@ contract Akutar is Ownable, ERC721 {
     //Whether we have committed yet.
     bool committed;
 
+    uint256 _totalSupply;
+
     //Struct to define a grouping of airdrops
     struct Grouping {
         uint256 startingIndex;
@@ -79,7 +81,9 @@ contract Akutar is Ownable, ERC721 {
             maxQuantityWithinThisGrouping;
 
         //Index to currently start on.
-        uint256 startingIndexWithinThisGrouping = thisGrouping.startingIndex + thisGrouping.minted + shiftQuantityWithinThisGrouping;
+        uint256 startingIndexWithinThisGrouping = thisGrouping.startingIndex +
+            thisGrouping.minted +
+            shiftQuantityWithinThisGrouping;
 
         require(
             thisGrouping.minted + addresses.length <=
@@ -91,7 +95,6 @@ contract Akutar is Ownable, ERC721 {
         uint256 currentId = startingIndexWithinThisGrouping;
 
         for (uint256 i = 0; i < addresses.length; i++) {
-
             //If we are over the endingIndex because of the shuffle, adjust to current position minus max quantity;
             if (currentId >= thisGrouping.endingIndex)
                 currentId = currentId - maxQuantityWithinThisGrouping;
@@ -103,6 +106,7 @@ contract Akutar is Ownable, ERC721 {
             currentId++;
         }
 
+        _totalSupply += addresses.length;
         airdropGroupings[airdropGrouping].minted += addresses.length;
     }
 
@@ -125,7 +129,10 @@ contract Akutar is Ownable, ERC721 {
         require(committed, "You have yet to commit");
 
         //Require it is at or beyond blockToUse
-        require(block.number >= blockToUse, "Not enough time has passed to reveal.");
+        require(
+            block.number >= blockToUse,
+            "Not enough time has passed to reveal."
+        );
 
         //set shift quantity
         shiftQuantity = (uint256(blockhash(blockToUse)) % 14999) + 1;
@@ -143,6 +150,10 @@ contract Akutar is Ownable, ERC721 {
         return CONTRACT_URI;
     }
 
+    function totalSupply() public view returns (uint256) {
+        return _totalSupply;
+    }
+
     function tokenURI(uint256 _tokenId)
         public
         view
@@ -151,11 +162,7 @@ contract Akutar is Ownable, ERC721 {
     {
         return
             string(
-                abi.encodePacked(
-                    BASE_URI,
-                    Strings.toString(_tokenId),
-                    ".json"
-                )
+                abi.encodePacked(BASE_URI, Strings.toString(_tokenId), ".json")
             );
     }
 }
