@@ -10,20 +10,44 @@ before(async function () {
 });
 
 describe("Tests", function () {
+  it("Permission checking", async function () {
+    await expect(Akutar.connect(signers[1]).airdrop(0, [signers[1].address])).to.be.revertedWith('Ownable: caller is not the owner');
+    await expect(Akutar.connect(signers[1]).commit('')).to.be.revertedWith('Ownable: caller is not the owner');
+    await expect(Akutar.connect(signers[1]).reveal()).to.be.revertedWith('Ownable: caller is not the owner');
+    await expect(Akutar.connect(signers[1]).setBaseURI('')).to.be.revertedWith('Ownable: caller is not the owner');
+    await expect(Akutar.connect(signers[1]).setContractURI('')).to.be.revertedWith('Ownable: caller is not the owner');
+    await expect(Akutar.connect(signers[1]).updateRoyalties(signers[1].address, 1000)).to.be.revertedWith('Ownable: caller is not the owner');
+  })
+
   it("Commits and reveal shuffle index", async function () {
-    await Akutar.commit();
+    // Cannot reveal before commit
+    await expect(Akutar.reveal()).to.be.revertedWith('You have yet to commit');
 
-    //Mine 5 fake blocks
-    await network.provider.send("evm_mine");
-    await network.provider.send("evm_mine");
-    await network.provider.send("evm_mine");
-    await network.provider.send("evm_mine");
-    await network.provider.send("evm_mine");
+    await Akutar.commit('TESTHASH');
 
+    // Cannot commit twice
+    await expect(Akutar.commit('')).to.be.revertedWith('Already committed!');
+
+    // Cannot reveal before block advanced by 5
+    await expect(Akutar.reveal()).to.be.revertedWith('Not enough time has passed to reveal');
+
+    //Mine more fake blocks
+    await network.provider.send("evm_mine");
+    // Cannot reveal before block advanced by 5
+    await expect(Akutar.reveal()).to.be.revertedWith('Not enough time has passed to reveal');
+
+    await network.provider.send("evm_mine");
+    
     await Akutar.reveal();
+
+    // Cannot reveal twice
+    await expect(Akutar.reveal()).to.be.revertedWith('Already shifted!');
 
     console.log(`Shift quantity has been set to: ${parseInt(await Akutar.shiftQuantity())}`);
     expect(await Akutar.shiftQuantity()).to.gte(0);
+
+    //Check provenance hash
+    expect(await Akutar.PROVENANCE_HASH()).to.equal('TESTHASH');
   });
 
   it("Should airdop akutars", async function () {

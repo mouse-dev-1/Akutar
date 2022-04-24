@@ -23,20 +23,17 @@ Written by: mousedev.eth
 */
 
 contract Akutar is Ownable, ERC721 {
-    //Contract URI
-    string public CONTRACT_URI;
-
     //Base URI
     string public BASE_URI;
+
+    //Provenance hash
+    string public PROVENANCE_HASH;
 
     //Shift Quantity;
     uint256 public shiftQuantity;
 
     //Block to base randomness off of
     uint256 blockToUse;
-
-    //Whether we have committed yet.
-    bool committed;
 
     uint256 _totalSupply;
 
@@ -50,22 +47,40 @@ contract Akutar is Ownable, ERC721 {
     //Mapping of groupingId to grouping struct.
     mapping(uint256 => Grouping) public airdropGroupings;
 
+    // EIP2981
+    uint256 private _royaltyBps;
+    address payable private _royaltyRecipient;
+    bytes4 private constant _INTERFACE_ID_ROYALTIES_EIP2981 = 0x2a55205a;
+
     constructor() ERC721("Akutars", "AKU") {
         //Partner
-        airdropGroupings[0] = Grouping(1, 7, 0);
+        airdropGroupings[0] = Grouping(1, 6, 0);
 
         //Mega OG
-        airdropGroupings[1] = Grouping(7, 536, 0);
+        airdropGroupings[1] = Grouping(7, 535, 0);
 
         //OG
-        airdropGroupings[2] = Grouping(536, 3063, 0);
+        airdropGroupings[2] = Grouping(536, 3062, 0);
 
         //Normal
-        airdropGroupings[3] = Grouping(3063, 15001, 0);
+        airdropGroupings[3] = Grouping(3063, 15000, 0);
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC721)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId) || interfaceId == _INTERFACE_ID_ROYALTIES_EIP2981;
     }
 
     function airdrop(uint256 airdropGrouping, address[] memory addresses)
-        public
+        external
         onlyOwner
     {
         require(shiftQuantity > 0, "Not yet shifted!");
@@ -74,7 +89,7 @@ contract Akutar is Ownable, ERC721 {
 
         //Total tokens in this grouping.
         uint256 maxQuantityWithinThisGrouping = (thisGrouping.endingIndex -
-            thisGrouping.startingIndex);
+            thisGrouping.startingIndex) + 1;
 
         //How much to shift within these constraints.
         uint256 shiftQuantityWithinThisGrouping = shiftQuantity %
@@ -100,7 +115,7 @@ contract Akutar is Ownable, ERC721 {
                 currentId = currentId - maxQuantityWithinThisGrouping;
 
             //Mint thisId
-            _mint(addresses[i], currentId);
+            _safeMint(addresses[i], currentId);
 
             //Increment ID by one.
             currentId++;
@@ -110,47 +125,39 @@ contract Akutar is Ownable, ERC721 {
         airdropGroupings[airdropGrouping].minted += addresses.length;
     }
 
-    function commit() public onlyOwner {
+    function commit(string memory _provenanceHash) external onlyOwner {
         //Require shift hasn't happened
-        require(shiftQuantity == 0, "Already shifted!");
+        require(blockToUse == 0, "Already committed!");
 
         //Set the block to use as 5 blocks from now
         blockToUse = block.number + 5;
 
-        //Set committed at true
-        committed = true;
+        //Set the provenance hash
+        PROVENANCE_HASH = _provenanceHash;
     }
 
-    function reveal() public onlyOwner {
+    function reveal() external onlyOwner {
+        //Require they have committed
+        require(blockToUse != 0, "You have yet to commit");
+
         //Require shift hasn't happened
         require(shiftQuantity == 0, "Already shifted!");
-
-        //Require they have committed
-        require(committed, "You have yet to commit");
 
         //Require it is at or beyond blockToUse
         require(
             block.number >= blockToUse,
-            "Not enough time has passed to reveal."
+            "Not enough time has passed to reveal"
         );
 
         //set shift quantity
-        shiftQuantity = (uint256(blockhash(blockToUse)) % 14999) + 1;
+        shiftQuantity = (uint256(blockhash(blockToUse)) % 15000);
     }
 
-    function setBaseURI(string memory _baseURI) public onlyOwner {
+    function setBaseURI(string memory _baseURI) external onlyOwner {
         BASE_URI = _baseURI;
     }
 
-    function setContractURI(string memory _contractURI) public onlyOwner {
-        CONTRACT_URI = _contractURI;
-    }
-
-    function contractURI() public view returns (string memory) {
-        return CONTRACT_URI;
-    }
-
-    function totalSupply() public view returns (uint256) {
+    function totalSupply() external view returns (uint256) {
         return _totalSupply;
     }
 
@@ -165,4 +172,18 @@ contract Akutar is Ownable, ERC721 {
                 abi.encodePacked(BASE_URI, Strings.toString(_tokenId), ".json")
             );
     }
+
+
+    /**
+     * ROYALTY FUNCTIONS
+     */
+    function updateRoyalties(address payable recipient, uint256 bps) external onlyOwner {
+        _royaltyRecipient = recipient;
+        _royaltyBps = bps;
+    }
+
+    function royaltyInfo(uint256, uint256 value) external view returns (address, uint256) {
+        return (_royaltyRecipient, value*_royaltyBps/10000);
+    }
+
 }
