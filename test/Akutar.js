@@ -15,7 +15,6 @@ describe("Tests", function () {
     await expect(Akutar.connect(signers[1]).commit('')).to.be.revertedWith('Ownable: caller is not the owner');
     await expect(Akutar.connect(signers[1]).reveal()).to.be.revertedWith('Ownable: caller is not the owner');
     await expect(Akutar.connect(signers[1]).setBaseURI('')).to.be.revertedWith('Ownable: caller is not the owner');
-    await expect(Akutar.connect(signers[1]).setContractURI('')).to.be.revertedWith('Ownable: caller is not the owner');
     await expect(Akutar.connect(signers[1]).updateRoyalties(signers[1].address, 1000)).to.be.revertedWith('Ownable: caller is not the owner');
   })
 
@@ -94,5 +93,21 @@ describe("Tests", function () {
 
     expect(totalSupply).to.equal(15000);
     expect(totalMinted).to.equal(15000);
+
+    // Test token uri
+    await expect(Akutar.tokenURI(15001)).to.be.revertedWith('ERC721Metadata: URI query for nonexistent token');
+
+    expect(await Akutar.tokenURI(1)).to.equal('1.json');
+    await Akutar.setBaseURI('http://test.com/');
+    expect(await Akutar.tokenURI(1)).to.equal('http://test.com/1.json');
   });
+
+  it("Royalty test", async function () {
+    // Test royalties
+    await Akutar.updateRoyalties(signers[1].address, 1000);
+    const royaltyAmount = await Akutar.royaltyInfo(1, 1000);
+    expect(royaltyAmount[0]).to.equal(signers[1].address);
+    expect(royaltyAmount[1]).to.deep.equal(ethers.BigNumber.from(100));
+  })
+
 });

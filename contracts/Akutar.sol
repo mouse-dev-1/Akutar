@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 Akutar.sol
 
 Written by: mousedev.eth
+Contributions by: manifold.xyz
 
 15,000 NFTs in 4 sections
 
@@ -167,6 +168,7 @@ contract Akutar is Ownable, ERC721 {
         override
         returns (string memory)
     {
+        require(_exists(_tokenId), "ERC721Metadata: URI query for nonexistent token");
         return
             string(
                 abi.encodePacked(BASE_URI, Strings.toString(_tokenId), ".json")
