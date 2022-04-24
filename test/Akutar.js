@@ -64,8 +64,11 @@ describe("Tests", function () {
       parseInt((await Akutar.airdropGroupings(2)).minted) +
       parseInt((await Akutar.airdropGroupings(3)).minted);
 
-    console.log(`${totalMinted} have been minted.`);
+    const totalSupply = await Akutar.totalSupply();
 
+    console.log(`${totalMinted} have been minted. Total supply equals ${totalSupply}.`);
+
+    expect(totalSupply).to.equal(15000);
     expect(totalMinted).to.equal(15000);
   });
 });
