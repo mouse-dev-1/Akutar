@@ -1,6 +1,9 @@
 const { expect } = require("chai");
 const { BigNumber } = require("ethers");
 const { ethers, waffle } = require("hardhat");
+const fs = require("fs").promises;
+const path = require("path");
+const Promise = require("bluebird");
 
 before(async function () {
   _Akutar = await ethers.getContractFactory("Akutar");
@@ -9,12 +12,40 @@ before(async function () {
   signers = await ethers.getSigners();
 });
 
+function splitArrayIntoChunksOfLen(arr, len) {
+  var chunks = [],
+    i = 0,
+    n = arr.length;
+  while (i < n) {
+    chunks.push(arr.slice(i, (i += len)));
+  }
+  return chunks;
+}
+
+const grabAddresses = async () => {
+  const addresses = await Promise.all([
+    (await fs.readFile(path.join(__dirname, "../airdropAddresses/partner.txt")))
+      .toString()
+      .split("\r\n"),
+    (await fs.readFile(path.join(__dirname, "../airdropAddresses/MegaOG.txt")))
+      .toString()
+      .split("\r\n"),
+    (await fs.readFile(path.join(__dirname, "../airdropAddresses/OG.txt")))
+      .toString()
+      .split("\r\n"),
+    (await fs.readFile(path.join(__dirname, "../airdropAddresses/Normal.txt")))
+      .toString()
+      .split("\r\n"),
+  ]);
+
+  return addresses;
+};
+
 describe("Tests", function () {
   it("Commits and reveal shuffle index", async function () {
     await Akutar.commit();
 
-    //Mine 5 fake blocks
-    await network.provider.send("evm_mine");
+    //Mine 4 more fake blocks
     await network.provider.send("evm_mine");
     await network.provider.send("evm_mine");
     await network.provider.send("evm_mine");
@@ -22,41 +53,25 @@ describe("Tests", function () {
 
     await Akutar.reveal();
 
-    console.log(`Shift quantity has been set to: ${parseInt(await Akutar.shiftQuantity())}`);
+    console.log(
+      `Shift quantity has been set to: ${parseInt(
+        await Akutar.shiftQuantity()
+      )}`
+    );
     expect(await Akutar.shiftQuantity()).to.gte(0);
   });
 
   it("Should airdop akutars", async function () {
-    //DROP 0
-    await Akutar.airdrop(0, signers.map((a) => a.address).slice(0, 6));
+    const addresses = await grabAddresses();
 
-    //DROP 1
-    for (var i = 0; i < 5; i++) {
-      await Akutar.airdrop(
-        1,
-        signers.map((a) => a.address)
+    //Loop through each grouping
+    await Promise.each(addresses, (airdropGrouping, index) => {
+      return Promise.each(
+        //Chunk the airdop into groups of 100, and use the index as the grouping ID.
+        splitArrayIntoChunksOfLen(airdropGrouping, 100),
+        (chunk) => Akutar.airdrop(index, chunk)
       );
-    }
-    await Akutar.airdrop(1, signers.map((a) => a.address).slice(0, 29));
-
-    //DROP 2
-    for (var i = 0; i < 25; i++) {
-      await Akutar.airdrop(
-        2,
-        signers.map((a) => a.address)
-      );
-    }
-    await Akutar.airdrop(2, signers.map((a) => a.address).slice(0, 27));
-
-    //DROP 3
-    for (var i = 0; i < 119; i++) {
-      await Akutar.airdrop(
-        3,
-        signers.map((a) => a.address)
-      );
-    }
-
-    await Akutar.airdrop(3, signers.map((a) => a.address).slice(0, 38));
+    });
 
     const totalMinted =
       parseInt((await Akutar.airdropGroupings(0)).minted) +
@@ -66,7 +81,9 @@ describe("Tests", function () {
 
     const totalSupply = await Akutar.totalSupply();
 
-    console.log(`${totalMinted} have been minted. Total supply equals ${totalSupply}.`);
+    console.log(
+      `${totalMinted} have been minted. Total supply equals ${totalSupply}.`
+    );
 
     expect(totalSupply).to.equal(15000);
     expect(totalMinted).to.equal(15000);
