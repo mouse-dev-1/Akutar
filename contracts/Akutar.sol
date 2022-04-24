@@ -124,6 +124,9 @@ contract Akutar is Ownable, ERC721 {
         //Require they have committed
         require(committed, "You have yet to commit");
 
+        //Require it is at or beyond blockToUse
+        require(block.number >= blockToUse, "Not enough time has passed to reveal.");
+
         //set shift quantity
         shiftQuantity = (uint256(blockhash(blockToUse)) % 14900) + 1;
     }
