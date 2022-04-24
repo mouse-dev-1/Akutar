@@ -43,7 +43,7 @@ const grabAddresses = async () => {
 
 describe("Tests", function () {
   it("Commits and reveal shuffle index", async function () {
-    await Akutar.commit();
+    await Akutar.commit("HASH");
 
     //Mine 4 more fake blocks
     await network.provider.send("evm_mine");
