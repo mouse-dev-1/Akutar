@@ -58,7 +58,7 @@ describe("Tests", function () {
         await Akutar.shiftQuantity()
       )}`
     );
-    expect(await Akutar.shiftQuantity()).to.gte(0);
+    expect(await Akutar.shiftQuantity()).to.gt(0);
   });
 
   it("Should airdop akutars", async function () {

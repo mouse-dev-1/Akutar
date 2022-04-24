@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 Akutar.sol
 
 Written by: mousedev.eth
+Contributions by: manifold.xyz
 
 15,000 NFTs in 4 sections
 
@@ -35,10 +36,10 @@ contract Akutar is Ownable, ERC721 {
     //Block to base randomness off of
     uint256 blockToUse;
 
-    //Whether we have committed yet.
-    bool committed;
-
     uint256 _totalSupply;
+
+    //Provenance hash
+    string public PROVENANCE_HASH;
 
     //Struct to define a grouping of airdrops
     struct Grouping {
@@ -49,6 +50,11 @@ contract Akutar is Ownable, ERC721 {
 
     //Mapping of groupingId to grouping struct.
     mapping(uint256 => Grouping) public airdropGroupings;
+
+    // EIP2981
+    uint256 private _royaltyBps;
+    address payable private _royaltyRecipient;
+    bytes4 private constant _INTERFACE_ID_ROYALTIES_EIP2981 = 0x2a55205a;
 
     constructor() ERC721("Akutars", "AKU") {
         //Partner
@@ -62,6 +68,21 @@ contract Akutar is Ownable, ERC721 {
 
         //Normal
         airdropGroupings[3] = Grouping(3063, 15001, 0);
+    }
+
+
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC721)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId) || interfaceId == _INTERFACE_ID_ROYALTIES_EIP2981;
     }
 
     function airdrop(uint256 airdropGrouping, address[] memory addresses)
@@ -110,33 +131,35 @@ contract Akutar is Ownable, ERC721 {
         airdropGroupings[airdropGrouping].minted += addresses.length;
     }
 
-    function commit() public onlyOwner {
+    function commit(string memory _provenanceHash) external onlyOwner {
         //Require shift hasn't happened
-        require(shiftQuantity == 0, "Already shifted!");
+        require(blockToUse == 0, "Already committed!");
 
         //Set the block to use as 5 blocks from now
         blockToUse = block.number + 5;
 
-        //Set committed at true
-        committed = true;
+        //Set the provenance hash
+        PROVENANCE_HASH = _provenanceHash;
     }
 
-    function reveal() public onlyOwner {
+
+    function reveal() external onlyOwner {
+        //Require they have committed
+        require(blockToUse != 0, "You have yet to commit");
+
         //Require shift hasn't happened
         require(shiftQuantity == 0, "Already shifted!");
-
-        //Require they have committed
-        require(committed, "You have yet to commit");
 
         //Require it is at or beyond blockToUse
         require(
             block.number >= blockToUse,
-            "Not enough time has passed to reveal."
+            "Not enough time has passed to reveal"
         );
 
         //set shift quantity
         shiftQuantity = (uint256(blockhash(blockToUse)) % 14999) + 1;
     }
+
 
     function setBaseURI(string memory _baseURI) public onlyOwner {
         BASE_URI = _baseURI;
@@ -160,9 +183,25 @@ contract Akutar is Ownable, ERC721 {
         override
         returns (string memory)
     {
+        require(_exists(_tokenId), "Token does not exist.");
+
         return
             string(
                 abi.encodePacked(BASE_URI, Strings.toString(_tokenId), ".json")
             );
     }
+
+    
+    /**
+     * ROYALTY FUNCTIONS
+     */
+    function updateRoyalties(address payable recipient, uint256 bps) external onlyOwner {
+        _royaltyRecipient = recipient;
+        _royaltyBps = bps;
+    }
+
+    function royaltyInfo(uint256, uint256 value) external view returns (address, uint256) {
+        return (_royaltyRecipient, value*_royaltyBps/10000);
+    }
+
 }
