@@ -157,7 +157,7 @@ contract Akutar is Ownable, ERC721 {
         );
 
         //set shift quantity
-        shiftQuantity = (uint256(blockhash(blockToUse)) % 14999) + 1;
+        shiftQuantity = uint256(blockhash(blockToUse));
     }
 
 
