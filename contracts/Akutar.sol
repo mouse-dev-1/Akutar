@@ -116,7 +116,7 @@ contract Akutar is Ownable, ERC721 {
                 currentId = currentId - maxQuantityWithinThisGrouping;
 
             //Mint thisId
-            _safeMint(addresses[i], currentId);
+            _mint(addresses[i], currentId);
 
             //Increment ID by one.
             currentId++;
