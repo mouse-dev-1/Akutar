@@ -53,9 +53,9 @@ const grabAddresses = async () => {
         try {
           console.log(`Airdropping group ${airdropIndex} chunk ${chunkIndex}`);
           await Akutar.airdrop(airdropIndex, chunk, {
-            gasLimit: 5000000,
+            gasLimit: 6000000,
           });
-          return Promise.delay(1000);
+          return Promise.delay(2000);
         } catch (error) {
           console.log(error);
           return Promise.delay(10000);
