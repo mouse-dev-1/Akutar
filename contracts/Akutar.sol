@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity 0.8.13;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -11,6 +11,7 @@ Akutar.sol
 
 Written by: mousedev.eth
 Contributions by: manifold.xyz
+Public Repository: https://github.com/mouse-dev-1/Akutar
 
 15,000 NFTs in 4 sections
 
